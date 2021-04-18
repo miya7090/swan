@@ -5,7 +5,7 @@ using System.Collections;
 public class ServerScript : MonoBehaviour
 {
     public string currentServerResponse;
-    public int pingInterval; // interval in seconds
+    public int pingInterval = 5; // interval in seconds
 
     void Start()
     {
@@ -18,19 +18,24 @@ public class ServerScript : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("myField", "myData");
 
-        using (UnityWebRequest www = UnityWebRequest.Post("http://127.0.0.1:5000/processImage", form))
-        {
-            yield return www.Send();
+        while (true) { // repeatedly request from server
+            using (UnityWebRequest www = UnityWebRequest.Post("http://127.0.0.1:5000/processImage", form))
+            {
+            
+                yield return www.Send();
 
-            if (www.isNetworkError)
-            {
-                Debug.Log(www.error);
+                if (www.isNetworkError)
+                {
+                    Debug.Log(www.error);
+                }
+                else
+                {
+                    currentServerResponse = www.downloadHandler.text;
+                    print("POST successful: " + currentServerResponse);
+                }
             }
-            else
-            {
-                currentServerResponse = www.downloadHandler.text;
-                print("POST successful: " + currentServerResponse);
-            }
+
+            yield return new WaitForSeconds(pingInterval);
         }
     }
 }
