@@ -28,39 +28,36 @@ def loadClassifiers():
 
     return f_cascade, e_cascade, emotion_net
 
-def extractFaceImg(frame, face_cascade, eyes_cascade):
-    '''Adds circles onto face+eyes in frame & displays,
-    Returns original image of face in frame, or None if no face'''
+def extractFaceImg(frame, face_cascade, eyes_cascade, pad=5):
+    '''Returns original image of face in frame, or None if no face.
+    Parameters: image frame, two classifiers,
+    pad (the padding around face to include when extracting face)'''
 
     # sample code from https://docs.opencv.org/4.5.2/db/d28/tutorial_cascade_classifier.html
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     frame_gray = cv2.equalizeHist(frame_gray)
-
+    
     # detect first face
     faces = face_cascade.detectMultiScale(frame_gray)
     if len(faces) > 0:
         x,y,w,h = faces[0]
-        center = (x + w//2, y + h//2)
-        frame = cv2.ellipse(frame, center, (w//2, h//2), 0, 0, 360, (255, 0, 255), 4)
-        p = 5 # padding around face
-        faceROI = frame_gray[y-p:y+h+p,x-p:x+w+p]
-
-        # detect eyes
-        eyes = eyes_cascade.detectMultiScale(faceROI)
-        for (x2,y2,w2,h2) in eyes:
-            eye_center = (x + x2 + w2//2, y + y2 + h2//2)
-            radius = int(round((w2 + h2)*0.25))
-            frame = cv2.circle(frame, eye_center, radius, (255, 0, 0 ), 4)
-
-        cv2.imshow("Face detected", frame)
-        return faceROI
+        faceROI = frame_gray[y-pad:y+h+pad,x-pad:x+w+pad]
+        return faceROI, (x,y,w,h)
     else:
-        return None
+        return None, None # no face detected
+
+def annotateFace(frame, coords, circleColor=(255,0,255)):
+    '''Adds circles onto face+eyes in frame at coords'''
+    if coords is not None:
+        x,y,w,h = coords
+        center = (x + w//2, y + h//2)
+        frame = cv2.ellipse(frame, center, (w//2, h//2), 0, 0, 360, circleColor, 4)
+    return frame
 
 def getEmotionOfFace(img, emotion_net):
     '''Returns a string denoting most likely emotion in face image'''
 
-    # convert to grayscale, resize, and reshape
+    # resize and reshape
     resized_face = cv2.resize(img, (64, 64))
     processed_face = resized_face.reshape(1,1,64,64)
     # feed into network
