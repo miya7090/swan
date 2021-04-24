@@ -42,7 +42,7 @@ public class SceneScript : MonoBehaviour
     private string scheduledAnim_category = ""; // the next scheduled animation to change to
     private int scheduledAnim_int = 1; // the next scheduled animation to change to
     private int curModel = 2; // the avatar skin
-    private int[] idleChangeFreq = {4, 7}; // range of seconds specifying when to refresh idle animation (#todo calculate from animation length)
+    private int idleChangeFreq = 2; // seconds specifying when to refresh idle animation (#todo calculate from animation length)
     private int greetingRefreshTime = 2; // switch away from greeting animation after this time (#todo calculate from greeting length)
     
     // Animation codes (#todo move this to a file)
@@ -95,7 +95,7 @@ public class SceneScript : MonoBehaviour
                 curAnim = scheduledAnim_int;
                 print("Performing motion "+animationList[curAnim]+" from category "+scheduledAnim_category);
                 SetAnimation(animationList[curAnim], animSpeed);
-                float nextRefreshTime = UnityEngine.Random.Range(idleChangeFreq[0], idleChangeFreq[1]);
+                float nextRefreshTime = idleChangeFreq;
                 Invoke("UpdateLoop", nextRefreshTime);
             }
             

@@ -1,0 +1,6 @@
+#ignore certain folders
+Temp
+Library
+Logs
+
+OpenCVSocket/__pycache__/
