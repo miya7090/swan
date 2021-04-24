@@ -13,40 +13,40 @@ public class SceneScript : MonoBehaviour
     // Public information
     public GameObject animTest;
     public GUISkin guiSkin;
-    public string boneName = "Hips";
-    public bool guiOn = true;
-    // Path names
-    public string FBXListFile = "fbx_list_a";
-    public string AnimationListFile = "animation_list_a";
-    public string TitleTextFile = "title_text_a";
+    // Path names (no need to change)
+    private const string FBXListFile = "fbx_list";
+    private const string AnimationListFile = "animation_list";
     private const string viewerResourcesPath = "Taichi";
-    private string viewerSettingPath = viewerResourcesPath + "/Viewer Settings";
-    private string viewerMaterialPath = viewerResourcesPath + "/Viewer Materials";
-    private string texturePath = viewerResourcesPath + "/Textures";
+    private const string viewerSettingPath = viewerResourcesPath + "/Viewer Settings";
+    private const string viewerMaterialPath = viewerResourcesPath + "/Viewer Materials";
+    private const string texturePath = viewerResourcesPath + "/Textures";
+    // Miscellaneous settings (no need to change)
+    private const int curLOD = 1; // display resolution. already set to highest; avoid changing this
+    private const string lodType = "_h"; // also display resolution
+    private const float animSpeed = 1; // animation speed. also avoid changing this
+    private const string boneName = "Hips";
     // File names (automatically updated, no need to manually change)
     private string curModelName = "";
     private string curAnimName = "";
     // Entity names (automatically loaded from paths, no need to manually change)
     private string[] animationList;
     private string[] modelList;
-
-    private TextAsset txt; // used for resource loading
-
-    // Not sure what these are for but they seem important
+    // Not sure what these are for but they seem important (no need to change)
+    private TextAsset txt;
     private GameObject obj;
     private GameObject loaded;
     private SkinnedMeshRenderer SM;
     private XmlDocument xDoc;
 
     // Local variables (important!)
+    // Call SceneScript functions to modify these variables and control behavior
     private int curAnim = 1; // the current animation to be shown
+    private string scheduledAnim_category = ""; // the next scheduled animation to change to
+    private int scheduledAnim_int = 1; // the next scheduled animation to change to
     private int curModel = 2; // the avatar skin
-    private int[] idleChangeFreq = {4, 7}; // range of seconds specifying when to refresh idle animation
-    private int greetingRefreshTime = 2; // switch away from greeting animation after this time. (#todo calculate from greeting length)
-    private const int curLOD = 1; // display resolution. already set to highest; avoid changing this
-    private const string lodType = "_h"; // also display resolution
-    private const float animSpeed = 1; // animation speed. also avoid changing this
-
+    private int[] idleChangeFreq = {4, 7}; // range of seconds specifying when to refresh idle animation (#todo calculate from animation length)
+    private int greetingRefreshTime = 2; // switch away from greeting animation after this time (#todo calculate from greeting length)
+    
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
     Dictionary<string, int[]> animationCodes = new Dictionary<string, int[]>() {
@@ -63,7 +63,7 @@ public class SceneScript : MonoBehaviour
 
         txt = Resources.Load<TextAsset>(viewerSettingPath + "/" + AnimationListFile);
         animationList = txt.text.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
-        print("Found animations:");
+        print("Found animations:"); // #todo convert these to Debug.Log commands
         print(String.Join(" ", animationList));
         
         txt = Resources.Load<TextAsset>(viewerSettingPath + "/fbx_ctrl");
@@ -72,23 +72,40 @@ public class SceneScript : MonoBehaviour
 
         ModelChange(modelList[curModel] + lodType); // initialize main model
 
-        Invoke("NewGreeting", 1); // begin the greeting action
+        ScheduleNewAnimation("greeting");
+        Invoke("UpdateLoop", greetingRefreshTime);
     }
 
-    // NewGreeting initiates a greeting animation before switching to idle animation loop
-    void NewGreeting()
+    // MOST IMPORTANT FUNCTIONS ----------------------------------------------------------------------
+
+    // ScheduleNewAnimation plans which animation the avatar will change into next
+    public void ScheduleNewAnimation(string animationType)
     {
-        PickMotion("greeting");
-        Invoke("NewIdleAnimation", greetingRefreshTime);
+        scheduledAnim_category = animationType;
     }
 
-    // NewIdleAnimation switches out the avatar's current idle animation at random intervals
-    void NewIdleAnimation()
+    // UpdateLoop switches out the avatar's current idle animation for the scheduled animation
+    void UpdateLoop()
     {
-        PickMotion("neutral");
-        float nextRefreshTime = UnityEngine.Random.Range(idleChangeFreq[0], idleChangeFreq[1]);
-        Invoke("NewIdleAnimation", nextRefreshTime);
+        if (animationCodes.ContainsKey(scheduledAnim_category)) {
+            int[] possibleActions = animationCodes[scheduledAnim_category];
+            int animIndex = UnityEngine.Random.Range(0, possibleActions.Length);
+            scheduledAnim_int = animationCodes[scheduledAnim_category][animIndex];
+
+            if (curAnim != scheduledAnim_int) {
+                curAnim = scheduledAnim_int;
+                print("Performing motion "+animationList[curAnim]+" from category "+scheduledAnim_category);
+                SetAnimation(animationList[curAnim], animSpeed);
+                float nextRefreshTime = UnityEngine.Random.Range(idleChangeFreq[0], idleChangeFreq[1]);
+                Invoke("UpdateLoop", nextRefreshTime);
+            }
+            
+        } else {
+            print("error: category doesn't exist, no motion scheduled");
+        }
     }
+
+    // HELPER FUNCTIONS (no need to change) -----------------------------------------------------------
 
     void Update()
     {
@@ -116,7 +133,6 @@ public class SceneScript : MonoBehaviour
             SM.updateWhenOffscreen = true;
 
             // animation things? not sure what for loop does
-            int i = 0;
             foreach (AnimationState anim in animTest.GetComponent<Animation>())
             {
                 obj.GetComponent<Animation>().AddClip(anim.clip, anim.name);
@@ -148,16 +164,6 @@ public class SceneScript : MonoBehaviour
         SetAnimation(animationList[curAnim], animSpeed);
     }
 
-    // Selects an animation from the specified category to perform next
-    void PickMotion(string _category)
-    {
-        int[] possibleActions = animationCodes[_category];
-        int animIndex = UnityEngine.Random.Range(0, possibleActions.Length);
-        curAnim = animationCodes[_category][animIndex];
-        print("Picking motion "+animationList[curAnim]+" from category "+_category);
-        SetAnimation(animationList[curAnim], animSpeed);
-    }
-
     void SetAnimation(string _name, float _speed)
     {
         if (!string.IsNullOrEmpty(_name))
@@ -176,7 +182,6 @@ public class SceneScript : MonoBehaviour
         if (_xDoc == null) return;
         if (_obj == null) return;
 
-        XmlNode xNode;
         XmlNode xNodeTex;
         XmlNode xNodeAni;
         string t;
