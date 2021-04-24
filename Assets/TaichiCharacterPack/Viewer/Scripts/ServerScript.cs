@@ -67,7 +67,7 @@ public class ServerScript : MonoBehaviour
 				byte[] data = client.Receive(ref anyIP);
 				currentServerResponse = Encoding.UTF8.GetString(data);
 				print (">> " + currentServerResponse + " >> " + testEtiquette[currentServerResponse]);
-				SceneScriptLink.ScheduleNewAnimation(testEtiquette[currentServerResponse]);
+				SceneScriptLink.ScheduleNewAnimation(testEtiquette[currentServerResponse], "Socket emotion recognition");
 			} catch(Exception e)
 			{
 				print(e.ToString());

@@ -38,12 +38,12 @@ public class SceneScript : MonoBehaviour
 
     // Local variables (important!)
     // Call SceneScript functions to modify these variables and control behavior
-    private int curAnim = 1; // the current animation to be shown
-    private string scheduledAnim_category = ""; // the next scheduled animation to change to
-    private int scheduledAnim_int = 1; // the next scheduled animation to change to
+    private int curAnim = 6; // the current animation to be shown
+    private string scheduledAnim_category; // the next scheduled animation to change to
+    private int scheduledAnim_int; // the next scheduled animation to change to
     private int curModel = 2; // the avatar skin
-    private int idleChangeFreq = 2; // seconds specifying when to refresh idle animation (#todo calculate from animation length)
-    private int greetingRefreshTime = 2; // switch away from greeting animation after this time (#todo calculate from greeting length)
+    private const int idleChangeFreq = 2; // seconds specifying when to refresh idle animation (should be ~same for each animation)
+    private int reactionCooldown = 4; // number of episodes (reactionCooldown*idleChangeFreq=amount of time) to wait out before performing another emotion
     
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
@@ -52,6 +52,7 @@ public class SceneScript : MonoBehaviour
         {"negative", new int[] {22, 23, 67, 70, 71, 77, 84}},
         {"hesitant", new int[] {9, 10, 24, 30, 42, 57}},
         {"neutral", new int[] {0, 20, 21, 38, 43, 50}},
+        {"true neutral", new int[] {0}}, // used for reaction cooldown
     };
     
     void Start()
@@ -70,17 +71,19 @@ public class SceneScript : MonoBehaviour
 
         ModelChange(modelList[curModel] + lodType); // initialize main model
 
-        ScheduleNewAnimation("greeting");
-        Invoke("UpdateLoop", greetingRefreshTime);
+        // start with a wave: gesture 6
+        ScheduleNewAnimation("neutral", "SceneScript initialization");
+        Invoke("UpdateLoop", idleChangeFreq);
     }
 
     // MOST IMPORTANT FUNCTIONS ----------------------------------------------------------------------
 
     // ScheduleNewAnimation plans which animation the avatar will change into next
-    public void ScheduleNewAnimation(string animationType)
+    // CallerID is a string specifying where this function was called from for readability
+    public void ScheduleNewAnimation(string animationType, string callerID)
     {
         scheduledAnim_category = animationType;
-        print("scheduled new motion of category " + scheduledAnim_category);
+        print(callerID + " scheduled new motion of category " + scheduledAnim_category);
     }
 
     // UpdateLoop switches out the avatar's current idle animation for the scheduled animation
@@ -95,13 +98,13 @@ public class SceneScript : MonoBehaviour
                 curAnim = scheduledAnim_int;
                 print("Performing motion "+animationList[curAnim]+" from category "+scheduledAnim_category);
                 SetAnimation(animationList[curAnim], animSpeed);
-                float nextRefreshTime = idleChangeFreq;
-                Invoke("UpdateLoop", nextRefreshTime);
             }
             
         } else {
             print("error: category doesn't exist, no motion scheduled");
         }
+
+        Invoke("UpdateLoop", idleChangeFreq);
     }
 
     // HELPER FUNCTIONS (no need to change) -----------------------------------------------------------
