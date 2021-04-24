@@ -36,23 +36,37 @@ public class SceneScript : MonoBehaviour
     private SkinnedMeshRenderer SM;
     private XmlDocument xDoc;
 
-    // Local variables (important!)
-    // Call SceneScript functions to modify these variables and control behavior
-    private int curAnim = 6; // the current animation to be shown
-    private string scheduledAnim_category; // the next scheduled animation to change to
-    private int scheduledAnim_int; // the next scheduled animation to change to
-    private int curModel = 2; // the avatar skin
-    private const int idleChangeFreq = 2; // seconds specifying when to refresh idle animation (should be ~same for each animation)
-    private int reactionCooldown = 4; // number of episodes (reactionCooldown*idleChangeFreq=amount of time) to wait out before performing another emotion
+    // Animation-controlling variables (important!)
+    // Refer to "animation picking diagram.jpg" for more details
+    private int curAnim; // the current animation to be shown
+    private int lastAnim;
+    private int curModel; // the avatar skin
+
+    private string scheduledMood_category; // *externally modifiable thru helper functions
+    private string scheduledReaction_category; // *externally modifiable thru helper functions
+    
+    private const int idleAnimationLength = 2; // length per each animation episode before refresh
+    // ^ #todo SPLIT THIS SEPARATELY BASED ON REACTION AND MOOD ANIMATION LENGTHS WHICH ARE DIFFERENT (1 VERSUS 2)?
+    private const int moodCooldown = 4; // cooldowns are in number of episodes
+    private const int reactionCooldown = 4;
+    private const int reactionInitiation = 6;
+    private int moodCooldownTimer;
+    private int reactionCooldownTimer = 0;
+    private int reactionInitiationTimer;
     
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
-    Dictionary<string, int[]> animationCodes = new Dictionary<string, int[]>() {
+    Dictionary<string, int[]> moodCodes = new Dictionary<string, int[]>() {
         {"greeting", new int[] {6, 7, 8, 26, 36, 37}},
         {"negative", new int[] {22, 23, 67, 70, 71, 77, 84}},
         {"hesitant", new int[] {9, 10, 24, 30, 42, 57}},
-        {"neutral", new int[] {0, 20, 21, 38, 43, 50}},
-        {"true neutral", new int[] {0}}, // used for reaction cooldown
+        {"neutral", new int[] {0, 20, 21, 38, 43, 50}}, // #todo these codes aren't accurate, update them
+    };
+
+    Dictionary<string, int[]> reactionCodes = new Dictionary<string, int[]>() {
+        {"random", new int[] {6, 7, 8, 26, 36, 37}},
+        {"greeting", new int[] {22, 23, 67, 70, 71, 77, 84}},
+        {"nod", new int[] {9, 10, 24, 30, 42, 57}}, // #todo these codes aren't accurate, update them
     };
     
     void Start()
@@ -71,40 +85,93 @@ public class SceneScript : MonoBehaviour
 
         ModelChange(modelList[curModel] + lodType); // initialize main model
 
-        // start with a wave: gesture 6
-        ScheduleNewAnimation("neutral", "SceneScript initialization");
-        Invoke("UpdateLoop", idleChangeFreq);
+        curAnim = 6; // start with a wave
+        lastAnim = 6;
+        curModel = 2;
+        scheduledMood_category = null;
+        scheduledReaction_category = "greeting";
+        moodCooldownTimer = 0;
+        reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated upon second episode
+        reactionInitiationTimer = 0;
+        Invoke("UpdateLoop", idleAnimationLength);
     }
 
     // MOST IMPORTANT FUNCTIONS ----------------------------------------------------------------------
 
-    // ScheduleNewAnimation plans which animation the avatar will change into next
+    // Refer to "animation picking diagram.jpg" for more details
     // CallerID is a string specifying where this function was called from for readability
-    public void ScheduleNewAnimation(string animationType, string callerID)
+    public void ScheduleNewMood(string animationType, string callerID)
     {
-        scheduledAnim_category = animationType;
-        print(callerID + " scheduled new motion of category " + scheduledAnim_category);
+        scheduledMood_category = animationType;
+        print(callerID + " scheduled new mood of category " + scheduledMood_category);
+    }
+
+    public void ScheduleNewReaction(string animationType, string callerID)
+    {
+        scheduledReaction_category = animationType;
+        print(callerID + " scheduled new reaction of category " + scheduledReaction_category);
     }
 
     // UpdateLoop switches out the avatar's current idle animation for the scheduled animation
     void UpdateLoop()
     {
-        if (animationCodes.ContainsKey(scheduledAnim_category)) {
-            int[] possibleActions = animationCodes[scheduledAnim_category];
-            int animIndex = UnityEngine.Random.Range(0, possibleActions.Length);
-            scheduledAnim_int = animationCodes[scheduledAnim_category][animIndex];
+        print("R:"+scheduledReaction_category+" M:"+scheduledMood_category);
+        print(reactionCooldownTimer+" "+moodCooldownTimer+" "+reactionInitiationTimer);
+        // Avatar logic~
+        // First, check if there's a scheduled reaction and we're not on reaction cooldown
+        if (scheduledReaction_category != null && reactionCooldownTimer > reactionCooldown) {
+            print("A");
+            commandAnimationSwitch(scheduledReaction_category, reactionCodes);
+            scheduledReaction_category = null;
+            reactionCooldownTimer = 0;
+            reactionInitiationTimer = 0;
 
-            if (curAnim != scheduledAnim_int) {
-                curAnim = scheduledAnim_int;
-                print("Performing motion "+animationList[curAnim]+" from category "+scheduledAnim_category);
+            scheduledMood_category = "neutral"; // immediately refresh to neutral mood after completion
+            moodCooldownTimer = moodCooldown;
+        }
+        // Otherwise, check if there's a scheduled mood and we're not on mood cooldown
+        else if (scheduledMood_category != null && moodCooldownTimer > moodCooldown) {
+            print("B");
+            commandAnimationSwitch(scheduledMood_category, moodCodes);
+            scheduledMood_category = null;
+            moodCooldownTimer = 0;
+            reactionInitiationTimer = 0;
+        }
+        // Otherwise, check if there's no scheduled reaction and we can initiate reaction
+        else if (scheduledMood_category == null && reactionInitiationTimer > reactionInitiation) {
+            print("C");
+            commandAnimationSwitch("random", reactionCodes);
+            reactionCooldownTimer = 0;
+            reactionInitiationTimer = 0;
+
+            scheduledMood_category = "neutral"; // immediately refresh to neutral mood after completion
+            moodCooldownTimer = moodCooldown;
+        } else {
+            print("D");
+        }
+        
+        // Update timers!
+        moodCooldownTimer += 1;
+        reactionCooldownTimer += 1;
+        reactionInitiationTimer += 1;
+
+        Invoke("UpdateLoop", idleAnimationLength);
+    }
+
+    // Pick animation from category using provided dictionary, and switch to it
+    void commandAnimationSwitch(string categoryName, Dictionary<string, int[]> codeDictionary) {
+        if (codeDictionary.ContainsKey(categoryName)) {
+            int[] possibleActions = codeDictionary[categoryName];
+            int animIndex = UnityEngine.Random.Range(0, possibleActions.Length);
+            curAnim = codeDictionary[categoryName][animIndex];
+            print("Performing motion "+animationList[curAnim]+" from category "+categoryName);
+            if (curAnim != lastAnim) {
                 SetAnimation(animationList[curAnim], animSpeed);
-            }
-            
+            }   
+            lastAnim = curAnim;        
         } else {
             print("error: category doesn't exist, no motion scheduled");
         }
-
-        Invoke("UpdateLoop", idleChangeFreq);
     }
 
     // HELPER FUNCTIONS (no need to change) -----------------------------------------------------------
