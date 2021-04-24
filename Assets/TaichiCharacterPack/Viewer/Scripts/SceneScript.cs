@@ -1,5 +1,3 @@
-// temp
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -82,6 +80,7 @@ public class SceneScript : MonoBehaviour
     public void ScheduleNewAnimation(string animationType)
     {
         scheduledAnim_category = animationType;
+        print("scheduled new motion of category " + scheduledAnim_category);
     }
 
     // UpdateLoop switches out the avatar's current idle animation for the scheduled animation
