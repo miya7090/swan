@@ -57,17 +57,42 @@ public class SceneScript : MonoBehaviour
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
     Dictionary<string, int[]> moodCodes = new Dictionary<string, int[]>() {
-        {"greeting", new int[] {6, 7, 8, 26, 36, 37}},
-        {"negative", new int[] {22, 23, 67, 70, 71, 77, 84}},
-        {"hesitant", new int[] {9, 10, 24, 30, 42, 57}},
-        {"neutral", new int[] {0, 20, 21, 38, 43, 50}}, // #todo these codes aren't accurate, update them
+        {"neutral", new int[] {31, 1}},
+        {"distracted", new int[] {43, 44, 50}},
     };
 
+    /* moods
+    1: idle_00: 14 seconds, neutral with scratching neck, staring into distance
+    31: pose_03: 14 seconds, listening with crossed arms
+
+    43: crossarms_00: 14 seconds, looking around/down with crossed arms
+    44: thinking_00: 10 seconds, arms crossed alternate looking down/up
+    50: idle_10: 12 seconds, looking around distractedly */
+
     Dictionary<string, int[]> reactionCodes = new Dictionary<string, int[]>() {
-        {"random", new int[] {6, 7, 8, 26, 36, 37}},
-        {"greeting", new int[] {22, 23, 67, 70, 71, 77, 84}},
-        {"nod", new int[] {9, 10, 24, 30, 42, 57}}, // #todo these codes aren't accurate, update them
+        {"greeting", new int[] {7}},
+        {"nod", new int[] {12, 13}},
+        {"shake", new int[] {23, 24}},
+        {"random", new int[] {12, 13, 23, 24}},
     };
+
+    /* reactions
+    7: greet_01: 2.5 seconds, wave
+    12: nod_00: 1 second, nods once
+    13: nod_01: 2 seconds, nod and casual fist pump
+    23: refuse_00: 1.5 seconds, head shake
+    24: refuse_01: 2 seconds, head shake and cross arms */
+
+    Dictionary<int, int> codeLengths = new Dictionary<int, int>() {
+        {0, 0}, // #todo store animation lengths to make cooldowns more accurate
+    };
+    
+    /* other interesting
+    10: embar_00: 8 seconds, look down scratch head
+    11: embar_01: 5 seconds, scratch head
+    2: idle_01: 2 seconds, neutral with blinking (same as idle_11?)
+    78: kick_24: 1 second, high kick to face
+    27: wink_00: 1.5 seconds, winks once */
     
     void Start()
     {
@@ -91,7 +116,7 @@ public class SceneScript : MonoBehaviour
         scheduledMood_category = null;
         scheduledReaction_category = "greeting";
         moodCooldownTimer = 0;
-        reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated upon second episode
+        reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated
         reactionInitiationTimer = 0;
         Invoke("UpdateLoop", idleAnimationLength);
     }
@@ -119,7 +144,7 @@ public class SceneScript : MonoBehaviour
         print(reactionCooldownTimer+" "+moodCooldownTimer+" "+reactionInitiationTimer);
         // Avatar logic~
         // First, check if there's a scheduled reaction and we're not on reaction cooldown
-        if (scheduledReaction_category != null && reactionCooldownTimer > reactionCooldown) {
+        if (scheduledReaction_category != null && reactionCooldownTimer >= reactionCooldown) {
             print("A");
             commandAnimationSwitch(scheduledReaction_category, reactionCodes);
             scheduledReaction_category = null;
@@ -130,7 +155,7 @@ public class SceneScript : MonoBehaviour
             moodCooldownTimer = moodCooldown;
         }
         // Otherwise, check if there's a scheduled mood and we're not on mood cooldown
-        else if (scheduledMood_category != null && moodCooldownTimer > moodCooldown) {
+        else if (scheduledMood_category != null && moodCooldownTimer >= moodCooldown) {
             print("B");
             commandAnimationSwitch(scheduledMood_category, moodCodes);
             scheduledMood_category = null;
@@ -138,7 +163,7 @@ public class SceneScript : MonoBehaviour
             reactionInitiationTimer = 0;
         }
         // Otherwise, check if there's no scheduled reaction and we can initiate reaction
-        else if (scheduledMood_category == null && reactionInitiationTimer > reactionInitiation) {
+        else if (scheduledMood_category == null && reactionInitiationTimer >= reactionInitiation) {
             print("C");
             commandAnimationSwitch("random", reactionCodes);
             reactionCooldownTimer = 0;
