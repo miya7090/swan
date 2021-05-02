@@ -57,14 +57,15 @@ public class SceneScript : MonoBehaviour
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
     Dictionary<string, int[]> moodCodes = new Dictionary<string, int[]>() {
-        {"neutral", new int[] {30, 0}},
-        {"distracted", new int[] {42, 43, 49}},
+        {"neutral", new int[] {30, 50}},
+        {"distracted", new int[] {0, 42, 43, 49}},
     };
 
     /* moods [[[when input into dictionary, subtract one for zero offset]]]
-    1: idle_00: 14 seconds, neutral with scratching neck, staring into distance
     31: pose_03: 14 seconds, listening with crossed arms
+    51: idle_11: totally neutral, staring straight
 
+    1: idle_00: 14 seconds, neutral with scratching neck, staring into distance
     43: crossarms_00: 14 seconds, looking around/down with crossed arms
     44: thinking_00: 10 seconds, arms crossed alternate looking down/up
     50: idle_10: 12 seconds, looking around distractedly */

@@ -20,26 +20,15 @@ public class ServerScript : MonoBehaviour
 	// Expression map (#todo move this to a file)
     // Observing a certain expression (key), perform another expression (value)
 	// Possible keys: ['Neutral', 'Happy', 'Surprise', 'Sad', 'Anger', 'Disgust', 'Fear', 'Contempt']
-	// Possible values: ['greeting', 'negative', 'hesitant', 'neutral'] #todo find more happy animations?!
+	// Possible values: ['neutral', 'distracted', ] #todo find more happy animations?! use face textures?
     Dictionary<string, string> etiquette = new Dictionary<string, string>() {
         {"Neutral", "neutral"},
         {"Happy", "neutral"},
         {"Surprise", "neutral"},
-        {"Anger", "hesitant"},
-		{"Disgust", "negative"},
-		{"Fear", "hesitant"},
-		{"Contempt", "negative"}
-    };
-
-	// for more easily testable results
-	Dictionary<string, string> testEtiquette = new Dictionary<string, string>() {
-        {"Neutral", "neutral"},
-        {"Happy", "negative"},
-        {"Surprise", "hesitant"},
-        {"Anger", "neutral"},
-		{"Disgust", "neutral"},
-		{"Fear", "neutral"},
-		{"Contempt", "neutral"}
+        {"Anger", "distracted"},
+		{"Disgust", "distracted"},
+		{"Fear", "distracted"},
+		{"Contempt", "distracted"}
     };
 
     void Start()
@@ -66,8 +55,8 @@ public class ServerScript : MonoBehaviour
 				IPEndPoint anyIP = new IPEndPoint(IPAddress.Parse("0.0.0.0"), port);
 				byte[] data = client.Receive(ref anyIP);
 				currentServerResponse = Encoding.UTF8.GetString(data);
-				print (">> " + currentServerResponse + " >> " + testEtiquette[currentServerResponse]);
-				SceneScriptLink.ScheduleNewMood(testEtiquette[currentServerResponse], "Socket emotion recognition");
+				print (">> " + currentServerResponse + " >> " + etiquette[currentServerResponse]);
+				SceneScriptLink.ScheduleNewMood(etiquette[currentServerResponse], "Socket emotion recognition");
 			} catch(Exception e)
 			{
 				print(e.ToString());
