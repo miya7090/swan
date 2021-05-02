@@ -57,11 +57,11 @@ public class SceneScript : MonoBehaviour
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
     Dictionary<string, int[]> moodCodes = new Dictionary<string, int[]>() {
-        {"neutral", new int[] {31, 1}},
-        {"distracted", new int[] {43, 44, 50}},
+        {"neutral", new int[] {30, 0}},
+        {"distracted", new int[] {42, 43, 49}},
     };
 
-    /* moods
+    /* moods [[[when input into dictionary, subtract one for zero offset]]]
     1: idle_00: 14 seconds, neutral with scratching neck, staring into distance
     31: pose_03: 14 seconds, listening with crossed arms
 
@@ -70,13 +70,12 @@ public class SceneScript : MonoBehaviour
     50: idle_10: 12 seconds, looking around distractedly */
 
     Dictionary<string, int[]> reactionCodes = new Dictionary<string, int[]>() {
-        {"greeting", new int[] {7}},
-        {"nod", new int[] {12, 13}},
-        {"shake", new int[] {23, 24}},
-        {"random", new int[] {12, 13, 23, 24}},
+        {"greeting", new int[] {6}},
+        {"nod", new int[] {11, 12}},
+        {"shake", new int[] {22, 23}},
     };
 
-    /* reactions
+    /* reactions [[[when input into dictionary, subtract one for zero offset]]]
     7: greet_01: 2.5 seconds, wave
     12: nod_00: 1 second, nods once
     13: nod_01: 2 seconds, nod and casual fist pump
@@ -191,7 +190,7 @@ public class SceneScript : MonoBehaviour
             curAnim = codeDictionary[categoryName][animIndex];
             print("Performing motion "+animationList[curAnim]+" from category "+categoryName);
             if (curAnim != lastAnim) {
-                SetAnimation(animationList[curAnim], animSpeed);
+                SetAnimation(animationList[curAnim], animSpeed, curAnim);
             }   
             lastAnim = curAnim;        
         } else {
@@ -231,7 +230,7 @@ public class SceneScript : MonoBehaviour
             {
                 obj.GetComponent<Animation>().AddClip(anim.clip, anim.name);
             }
-            this.SetAnimation("" + animationList[curAnim], animSpeed);
+            this.SetAnimation(animationList[curAnim], animSpeed, curAnim);
         }
     }
 
@@ -255,14 +254,14 @@ public class SceneScript : MonoBehaviour
         {
             curAnim = animationList.Length - 1;
         }
-        SetAnimation(animationList[curAnim], animSpeed);
+        SetAnimation(animationList[curAnim], animSpeed, curAnim);
     }
 
-    void SetAnimation(string _name, float _speed)
+    void SetAnimation(string _name, float _speed, int originalAnimNumber)
     {
         if (!string.IsNullOrEmpty(_name))
         {
-            print("Setting animation to: " + _name);
+            print("Setting animation to: " + _name + " ("+originalAnimNumber+")");
             curAnimName = "" + _name;
             obj.GetComponent<Animation>().Play(curAnimName);
 
