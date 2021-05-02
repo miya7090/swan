@@ -7,16 +7,13 @@ using UnityEngine.Windows.Speech;
 
 public class VoiceScript : MonoBehaviour
 {
-    public Text ResultedText;
+    // Link to the SceneScript to send animation commands to
+    public SceneScript SceneScriptLink;
 
     protected DictationRecognizer dictationRecognizer;
 
-    [System.Serializable]
-    public class UnityEventString : UnityEngine.Events.UnityEvent<string> { };
-    public UnityEventString OnPhraseRecognized;
-
-    public UnityEngine.Events.UnityEvent OnUserStartedSpeaking;
-
+    // public Text ResultedText; // not used since we don't wait to make text predictions
+    public string CurrentText;
     public bool isUserSpeaking;
 
     void Start()
@@ -27,13 +24,11 @@ public class VoiceScript : MonoBehaviour
     private void DictationRecognizer_OnDictationHypothesis(string text)
     {
         Debug.LogFormat("Dictation hypothesis: {0}", text);
-
-        if (isUserSpeaking == false)
-        {
-            isUserSpeaking = true;
-            OnUserStartedSpeaking.Invoke();
-        }
+        CurrentText = text;
+        if (isUserSpeaking == false) { isUserSpeaking = true; }
     }
+
+    // no need to change functions below this line ------------------------------------------------------------------------
 
     /// thrown when engine has some messages, that are not specifically errors
     private void DictationRecognizer_OnDictationComplete(DictationCompletionCause completionCause)
@@ -41,7 +36,6 @@ public class VoiceScript : MonoBehaviour
         if (completionCause != DictationCompletionCause.Complete)
         {
             Debug.LogWarningFormat("Dictation completed unsuccessfully: {0}.", completionCause);
-
 
             switch (completionCause)
             {
@@ -56,13 +50,9 @@ public class VoiceScript : MonoBehaviour
                 case DictationCompletionCause.AudioQualityFailure:
                 case DictationCompletionCause.MicrophoneUnavailable:
                 case DictationCompletionCause.NetworkFailure:
-                    //error without a way to recover
                     CloseDictationEngine();
                     break;
-
-                case DictationCompletionCause.Canceled:
-                    //happens when focus moved to another application 
-
+                case DictationCompletionCause.Canceled: //happens when focus moved to another application
                 case DictationCompletionCause.Complete:
                     CloseDictationEngine();
                     StartDictationEngine();
@@ -74,13 +64,14 @@ public class VoiceScript : MonoBehaviour
     /// Resulted complete phrase will be determined once the person stops speaking. the best guess from the PC will go on the result.
     private void DictationRecognizer_OnDictationResult(string text, ConfidenceLevel confidence)
     {
+        /* // Don't waste processing on this function, process live only, don't wait until stop speaking (#todo can this function be removed entirely) 
         Debug.LogFormat("Dictation result: {0}", text);
         if (ResultedText) ResultedText.text += text + "\n";
-
+        */
         if (isUserSpeaking == true)
         {
             isUserSpeaking = false;
-            OnPhraseRecognized.Invoke(text);
+            //OnPhraseRecognized.Invoke(text);
         }
     }
 
@@ -88,7 +79,6 @@ public class VoiceScript : MonoBehaviour
     {
         Debug.LogErrorFormat("Dictation error: {0}; HResult = {1}.", error, hresult);
     }
-
 
     private void OnApplicationQuit()
     {
