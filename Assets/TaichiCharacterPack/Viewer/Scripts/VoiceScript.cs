@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Windows.Speech;
+using System.Collections.Generic;
 
 /// code source: https://github.com/LightBuzz/Speech-Recognition-Unity/blob/master/SpeechRecognitionUnity/Assets/Open%20Dictation%20Mode/DictationEngine.cs
 /// https://www.w3.org/TR/speech-grammar/
@@ -9,10 +10,12 @@ public class VoiceScript : MonoBehaviour
 {
     // Link to the SceneScript to send animation commands to
     public SceneScript SceneScriptLink;
-
     protected DictationRecognizer dictationRecognizer;
 
-    // public Text ResultedText; // not used since we don't wait to make text predictions
+    // #todo replace with sentiment analysis
+    private List<string> positiveWords = new List<string>(){"good", "great", "easy", "nice", "happy", "amazing", "fantastic", "interesting"};
+    private List<string> negativeWords = new List<string>(){"sad", "unsure", "frustrating", "stuck", "broken", "angry", "hard", "difficult", "confusing"};
+
     public string CurrentText;
     public bool isUserSpeaking;
 
@@ -26,6 +29,23 @@ public class VoiceScript : MonoBehaviour
         Debug.LogFormat("Dictation hypothesis: {0}", text);
         CurrentText = text;
         if (isUserSpeaking == false) { isUserSpeaking = true; }
+
+        string[] wordsSpoken = CurrentText.Split(' ');
+        for (int i = 0; i < wordsSpoken.Length; i++)
+        {
+            if (positiveWords.Contains(wordsSpoken[i]))
+            {
+                print("positive word detected! " + wordsSpoken[i]);
+                SceneScriptLink.ScheduleNewReaction("nod", "Voice recognition - positive");
+                CurrentText = "";
+            }
+            else if (negativeWords.Contains(wordsSpoken[i]))
+            {
+                print("negative word detected! " + wordsSpoken[i]);
+                SceneScriptLink.ScheduleNewReaction("shake", "Voice recognition - negative");
+                CurrentText = "";
+            }
+        }
     }
 
     // no need to change functions below this line ------------------------------------------------------------------------
