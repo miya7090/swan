@@ -71,14 +71,14 @@ public class SceneScript : MonoBehaviour
 
     Dictionary<string, int[]> reactionCodes = new Dictionary<string, int[]>() {
         {"greeting", new int[] {6}},
-        {"nod", new int[] {11, 12}},
+        {"nod", new int[] {20, 21}}, // <= generated reactions currently default to "nod" category
         {"shake", new int[] {22, 23}},
     };
 
     /* reactions [[[when input into dictionary, subtract one for zero offset]]]
     7: greet_01: 2.5 seconds, wave
-    12: nod_00: 1 second, nods once
-    13: nod_01: 2 seconds, nod and casual fist pump
+    21: nod_00: 1 second, nods once
+    22: nod_01: 2 seconds, nod and casual fist pump
     23: refuse_00: 1.5 seconds, head shake
     24: refuse_01: 2 seconds, head shake and cross arms */
 
@@ -109,8 +109,8 @@ public class SceneScript : MonoBehaviour
 
         ModelChange(modelList[curModel] + lodType); // initialize main model
 
-        curAnim = 6; // start with a wave
-        lastAnim = 6;
+        curAnim = 0; // will later be updated to "greeting" through cooldown
+        lastAnim = 0;
         curModel = 2;
         scheduledMood_category = null;
         scheduledReaction_category = "greeting";
@@ -139,46 +139,54 @@ public class SceneScript : MonoBehaviour
     // UpdateLoop switches out the avatar's current idle animation for the scheduled animation
     void UpdateLoop()
     {
-        print("R:"+scheduledReaction_category+" M:"+scheduledMood_category);
-        print(reactionCooldownTimer+" "+moodCooldownTimer+" "+reactionInitiationTimer);
+        string debugOutput = "M:"+scheduledMood_category+" R:"+scheduledReaction_category+" ";
+        debugOutput += moodCooldownTimer+"/"+moodCooldown+" ";
+        debugOutput += reactionCooldownTimer+"/"+reactionCooldown+" ";
+        debugOutput += reactionInitiationTimer+"/"+reactionInitiation+" ";
+
+        bool generateRandomReact = (UnityEngine.Random.Range(1, 21) <= 1); // 5% of time, randomly nod
+        if (generateRandomReact) { debugOutput += "|random react!!| "; }
+        
         // Avatar logic~
         // First, check if there's a scheduled reaction and we're not on reaction cooldown
         if (scheduledReaction_category != null && reactionCooldownTimer >= reactionCooldown) {
-            print("A");
+            debugOutput += "[switch to react] ";
             commandAnimationSwitch(scheduledReaction_category, reactionCodes);
             scheduledReaction_category = null;
+            scheduledMood_category = "neutral"; // immediately refresh to neutral mood after completion
+
+            moodCooldownTimer = moodCooldown;
             reactionCooldownTimer = 0;
             reactionInitiationTimer = 0;
-
-            scheduledMood_category = "neutral"; // immediately refresh to neutral mood after completion
-            moodCooldownTimer = moodCooldown;
         }
         // Otherwise, check if there's a scheduled mood and we're not on mood cooldown
         else if (scheduledMood_category != null && moodCooldownTimer >= moodCooldown) {
-            print("B");
+            debugOutput += "[switch to mood] ";
             commandAnimationSwitch(scheduledMood_category, moodCodes);
             scheduledMood_category = null;
             moodCooldownTimer = 0;
+            reactionCooldownTimer += 1;
             reactionInitiationTimer = 0;
         }
         // Otherwise, check if there's no scheduled reaction and we can initiate reaction
-        else if (scheduledMood_category == null && reactionInitiationTimer >= reactionInitiation) {
-            print("C");
-            commandAnimationSwitch("random", reactionCodes);
+        else if (scheduledMood_category == null && (reactionInitiationTimer >= reactionInitiation || generateRandomReact)) {
+            debugOutput += "[generate react] ";
+            commandAnimationSwitch("nod", reactionCodes);
+            moodCooldownTimer += 1;
             reactionCooldownTimer = 0;
             reactionInitiationTimer = 0;
 
             scheduledMood_category = "neutral"; // immediately refresh to neutral mood after completion
             moodCooldownTimer = moodCooldown;
         } else {
-            print("D");
+            debugOutput += "[idle] ";
+            moodCooldownTimer += 1;
+            reactionCooldownTimer += 1;
+            reactionInitiationTimer += 1;
         }
         
         // Update timers!
-        moodCooldownTimer += 1;
-        reactionCooldownTimer += 1;
-        reactionInitiationTimer += 1;
-
+        print(debugOutput);
         Invoke("UpdateLoop", idleAnimationLength);
     }
 
@@ -191,10 +199,12 @@ public class SceneScript : MonoBehaviour
             print("Performing motion "+animationList[curAnim]+" from category "+categoryName);
             if (curAnim != lastAnim) {
                 SetAnimation(animationList[curAnim], animSpeed, curAnim);
-            }   
+            } else {
+                print("animation already "+animationList[curAnim]+" , will not change");
+            }
             lastAnim = curAnim;        
         } else {
-            print("error: category doesn't exist, no motion scheduled");
+            print("error: category "+categoryName+" doesn't exist, no motion scheduled");
         }
     }
 
