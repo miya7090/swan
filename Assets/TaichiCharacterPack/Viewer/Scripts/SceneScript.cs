@@ -11,6 +11,8 @@ public class SceneScript : MonoBehaviour
     // Public information
     public GameObject animTest;
     public GUISkin guiSkin;
+    public AudioSource avatarAudioSource;
+    
     // Path names (no need to change)
     private const string FBXListFile = "fbx_list";
     private const string AnimationListFile = "animation_list";
@@ -53,6 +55,9 @@ public class SceneScript : MonoBehaviour
     private int moodCooldownTimer;
     private int reactionCooldownTimer = 0;
     private int reactionInitiationTimer;
+
+    // Codes for sound files to play
+    Dictionary<string, AudioClip[]> voiceCodes = new Dictionary<string, AudioClip[]>();
     
     // Animation codes (#todo move this to a file)
     // These classify animations into categories
@@ -108,6 +113,19 @@ public class SceneScript : MonoBehaviour
         xDoc = new XmlDocument();
         xDoc.LoadXml(txt.text);
 
+        // load audio clips for taichi to speak
+        foreach (string audioFolder in new List<string>(){"greeting", "positive"})
+        {
+            List<AudioClip> my_Clips_list = new List<AudioClip>();
+            foreach (UnityEngine.Object myClip_obj in Resources.LoadAll("simlish_audio/"+audioFolder))
+            {
+                my_Clips_list.Add((AudioClip)myClip_obj);
+            }
+            voiceCodes.Add(audioFolder, my_Clips_list.ToArray());
+        }
+
+        print("voice codes initialization complete: " + voiceCodes.ToString());
+
         ModelChange(modelList[curModel] + lodType); // initialize main model
 
         curAnim = 0; // will later be updated to "greeting" through cooldown
@@ -119,6 +137,8 @@ public class SceneScript : MonoBehaviour
         reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated
         reactionInitiationTimer = 0;
         Invoke("UpdateLoop", idleAnimationLength);
+
+        playSound("testing testing testing testing testing");
     }
 
     // MOST IMPORTANT FUNCTIONS ----------------------------------------------------------------------
@@ -216,6 +236,15 @@ public class SceneScript : MonoBehaviour
         // For debugging: manually change the current animation
         if (Input.GetKeyDown("q")) IncrementMotion(-1);
         if (Input.GetKeyDown("w")) IncrementMotion(1);
+    }
+
+    void playSound(string soundType)
+    {
+        if (true) {
+            GetComponent<AudioSource>().clip = voiceCodes["greeting"][UnityEngine.Random.Range(0, voiceCodes["greeting"].Length)];
+            GetComponent<AudioSource>().Play();
+            print("ooooooooooooooooooooooooooooooooooooooooooooo");
+        }
     }
 
     // Initialize the avatar model
