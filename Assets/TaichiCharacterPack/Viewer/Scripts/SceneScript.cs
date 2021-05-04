@@ -88,8 +88,13 @@ public class SceneScript : MonoBehaviour
     23: refuse_00: 1.5 seconds, head shake
     24: refuse_01: 2 seconds, head shake and cross arms */
 
-    Dictionary<int, int> codeLengths = new Dictionary<int, int>() {
-        {0, 0}, // #todo store animation lengths to make cooldowns more accurate
+    // maps animation codes to how long to wait before producing sound
+    Dictionary<int, float> soundDelay = new Dictionary<int, float>() {
+        {30, 7}, {50, 9999},
+        {0, 1}, {42, 1}, {43, 1}, {49, 1},
+        {6, 0.5f},
+        {20, 0}, {21, 0},
+        {22, 0}, {23, 0}
     };
     
     /* other interesting
@@ -114,7 +119,7 @@ public class SceneScript : MonoBehaviour
         xDoc.LoadXml(txt.text);
 
         // load audio clips for taichi to speak
-        foreach (string audioFolder in new List<string>(){"greeting", "positive"})
+        foreach (string audioFolder in new List<string>(){"greeting", "positive", "confident-ahh", "disappoint-ahh", "thinking-hesitant"})
         {
             List<AudioClip> my_Clips_list = new List<AudioClip>();
             foreach (UnityEngine.Object myClip_obj in Resources.LoadAll("simlish_audio/"+audioFolder))
@@ -137,8 +142,6 @@ public class SceneScript : MonoBehaviour
         reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated
         reactionInitiationTimer = 0;
         Invoke("UpdateLoop", idleAnimationLength);
-
-        playSound("testing testing testing testing testing");
     }
 
     // MOST IMPORTANT FUNCTIONS ----------------------------------------------------------------------
@@ -227,6 +230,9 @@ public class SceneScript : MonoBehaviour
         } else {
             print("error: category "+categoryName+" doesn't exist, no motion scheduled");
         }
+
+        // play a sound, maybe
+        playSound(categoryName);
     }
 
     // HELPER FUNCTIONS (no need to change) -----------------------------------------------------------
@@ -240,11 +246,23 @@ public class SceneScript : MonoBehaviour
 
     void playSound(string soundType)
     {
-        if (true) {
+        // "neutral", "distracted", "greeting", "nod", "shake"
+        if (soundType == "greeting") {
             GetComponent<AudioSource>().clip = voiceCodes["greeting"][UnityEngine.Random.Range(0, voiceCodes["greeting"].Length)];
-            GetComponent<AudioSource>().Play();
-            print("ooooooooooooooooooooooooooooooooooooooooooooo");
+        } else if (soundType == "neutral") {
+            GetComponent<AudioSource>().clip = voiceCodes["thinking-hesitant"][UnityEngine.Random.Range(0, voiceCodes["thinking-hesitant"].Length)];
+        } else if (soundType == "distracted") {
+            GetComponent<AudioSource>().clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
+        } else if (soundType == "nod") {
+            GetComponent<AudioSource>().clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
+        } else if (soundType == "shake") {
+            GetComponent<AudioSource>().clip = voiceCodes["disappoint-ahh"][UnityEngine.Random.Range(0, voiceCodes["disappoint-ahh"].Length)];
+        } else {
+            print("261 - error processing sound type");
         }
+
+        print("ooooooooooooooooooooooooooooooooooooooooooooo - "+curAnim+" - "+soundType);
+        GetComponent<AudioSource>().PlayDelayed(soundDelay[curAnim]);
     }
 
     // Initialize the avatar model
