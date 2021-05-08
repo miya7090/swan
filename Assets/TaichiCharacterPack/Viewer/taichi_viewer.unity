@@ -259,6 +259,8 @@ GameObject:
   - component: {fileID: 954873743}
   - component: {fileID: 954873744}
   - component: {fileID: 954873745}
+  - component: {fileID: 954873747}
+  - component: {fileID: 954873746}
   m_Layer: 0
   m_Name: ScriptRunner
   m_TagString: Untagged
@@ -419,6 +421,44 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &954873746
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954873740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a73965cfb1f55945b69177e131a23f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  predictionObject: {fileID: 954873747}
+  textToSend: testing testing one two amazing nice good
+  ChangeSentimentalColor: {fileID: 0}
+  PositiveResponse: {r: 0.21124065, g: 0.9528302, b: 0.2864984, a: 0}
+  NegativeResponse: {r: 0.5471698, g: 0.17808829, b: 0.17808829, a: 0}
+  NeutralResponse: {r: 0.754717, g: 0.65859735, b: 0.65859735, a: 0}
+  PositivePercent: {fileID: 0}
+  NegativePercent: {fileID: 0}
+  NeutralPercent: {fileID: 0}
+--- !u!114 &954873747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954873740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fad379cc4debb1a499f5602b58c06cc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PositiveWordsFileText: SentimentDataTrained/positiveWordsStem
+  NegativeWordsFileText: SentimentDataTrained/negativeWordsStem
+  ContractionWordsFileText: SentimentDataTrained/contractionWords
+  StopWordsFileText: SentimentDataTrained/stopWords
+  SentimentValue: 0.3
 --- !u!1 &1235032917
 GameObject:
   m_ObjectHideFlags: 0
