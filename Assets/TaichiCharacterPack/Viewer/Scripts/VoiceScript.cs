@@ -13,8 +13,8 @@ public class VoiceScript : MonoBehaviour
     protected DictationRecognizer dictationRecognizer;
 
     // #todo replace with sentiment analysis
-    private List<string> positiveWords = new List<string>(){"good", "great", "easy", "nice", "happy", "amazing", "fantastic", "interesting"};
-    private List<string> negativeWords = new List<string>(){"sad", "unsure", "frustrating", "stuck", "broken", "angry", "hard", "difficult", "confusing"};
+    private List<string> positiveWords = new List<string>(){"thanks", "thank", "good", "great", "easy", "nice", "happy", "interesting", "cool", "fun"};
+    private List<string> negativeWords = new List<string>(){"sad", "stress", "stressing", "stresses", "stressful", "frustrating", "stuck", "broken", "angry", "hard", "difficult", "confusing"};
 
     public string CurrentText;
     public bool isUserSpeaking;
@@ -26,7 +26,7 @@ public class VoiceScript : MonoBehaviour
 
     private void DictationRecognizer_OnDictationHypothesis(string text)
     {
-        Debug.LogFormat("Dictation hypothesis: {0}", text);
+        //Debug.LogFormat("Dictation hypothesis: {0}", text);
         CurrentText = text;
         if (isUserSpeaking == false) { isUserSpeaking = true; }
 

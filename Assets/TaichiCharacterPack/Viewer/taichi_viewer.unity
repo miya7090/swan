@@ -433,15 +433,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a73965cfb1f55945b69177e131a23f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SceneScriptLink: {fileID: 954873742}
   predictionObject: {fileID: 954873747}
-  textToSend: testing testing one two amazing nice good
-  ChangeSentimentalColor: {fileID: 0}
-  PositiveResponse: {r: 0.21124065, g: 0.9528302, b: 0.2864984, a: 0}
-  NegativeResponse: {r: 0.5471698, g: 0.17808829, b: 0.17808829, a: 0}
-  NeutralResponse: {r: 0.754717, g: 0.65859735, b: 0.65859735, a: 0}
-  PositivePercent: {fileID: 0}
-  NegativePercent: {fileID: 0}
-  NeutralPercent: {fileID: 0}
+  SentimentAnalysisResponse: {x: 0, y: 0, z: 0}
+  SENTIMENT_ANALYSIS_FREQUENCY: 3.5
 --- !u!114 &954873747
 MonoBehaviour:
   m_ObjectHideFlags: 0

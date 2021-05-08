@@ -6,6 +6,8 @@ using UnitySentiment;
 
 public class SendTextToAnalyse : MonoBehaviour {
 
+	// Link to the SceneScript to send animation commands to
+    public SceneScript SceneScriptLink;
 	public SentimentAnalysis predictionObject;
 	VoiceScript myVoiceScript;
 
@@ -30,11 +32,10 @@ public class SendTextToAnalyse : MonoBehaviour {
 	{
 		string sendText = myVoiceScript.CurrentText;
 		if (string.IsNullOrEmpty(sendText)) {
-			sendText = "wonderful good amazing happy time";
+			sendText = "null";
 		}
 		print("sending "+sendText+" to sentiment prediction object...");
 		predictionObject.PredictSentimentText(myVoiceScript.CurrentText);
-		print("sent to sentiment!");
 		StartCoroutine(WaitResponseFromThread());
 	}
 
@@ -51,15 +52,29 @@ public class SendTextToAnalyse : MonoBehaviour {
 		{
 			yield return null;
 		}
-		print("a response from sentiment!");
 		// Main Thread Action
 		PrintAnalysis();
+		ActUponAnalysis();
 		yield return new WaitForSeconds(SENTIMENT_ANALYSIS_FREQUENCY);
 
 		// Reset
 		responseFromThread = false;
 		threadStarted = false;
 		UpdateLoop();
+	}
+
+	private void ActUponAnalysis()
+	{
+		if (SentimentAnalysisResponse.x > 0.7)
+		{
+			print("positive sentiment detected! " + SentimentAnalysisResponse.x.ToString());
+			SceneScriptLink.ScheduleNewReaction("nod", "Voice sentiment - positive");
+		}
+		else if (SentimentAnalysisResponse.y > 0.7)
+		{
+			print("negative sentiment detected! " + SentimentAnalysisResponse.y.ToString());
+			SceneScriptLink.ScheduleNewReaction("shake", "Voice sentiment - negative");
+		}
 	}
 
 	private void PrintAnalysis()
