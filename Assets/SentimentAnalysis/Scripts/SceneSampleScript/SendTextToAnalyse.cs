@@ -6,51 +6,36 @@ using UnitySentiment;
 
 public class SendTextToAnalyse : MonoBehaviour {
 
-	public SentimentAnalysis predictionObject ;
-	public string textToSend;
-
-	public Image ChangeSentimentalColor;
-	public Color PositiveResponse;
-	public Color NegativeResponse;
-	public Color NeutralResponse;
-
-	public Text PositivePercent;
-	public Text NegativePercent;
-	public Text NeutralPercent;
+	public SentimentAnalysis predictionObject;
+	VoiceScript myVoiceScript;
 
 	private bool responseFromThread = false;
 	private bool threadStarted = false;
-	private Vector3 SentimentAnalysisResponse;
+	public Vector3 SentimentAnalysisResponse;
 
-	void OnEnable() 
+	public float SENTIMENT_ANALYSIS_FREQUENCY = 1.5f; // in seconds
+
+	void Start() 
 	{
 		Application.runInBackground = true;
-		// Initialize the local database
 		predictionObject.Initialize();
-		// Listedn to the Events
-		// Sentiment analysis response
 		SentimentAnalysis.OnAnlysisFinished += GetAnalysisFromThread;
-		// Error response
 		SentimentAnalysis.OnErrorOccurs += Errors;
+		myVoiceScript = GetComponent<VoiceScript>();
+
+		UpdateLoop();
 	}
 
-	void OnDestroy()
+	void UpdateLoop()
 	{
-		// Unload Listeners
-		SentimentAnalysis.OnAnlysisFinished -= GetAnalysisFromThread;
-		SentimentAnalysis.OnErrorOccurs -= Errors;
-	}
-
-	public void SendPredictionText()
-	{
-		// Thread-safe computations
-		predictionObject.PredictSentimentText(textToSend);
-
-		if (!threadStarted)
-		{// Thread Started
-			threadStarted = true;
-			StartCoroutine(WaitResponseFromThread());
+		string sendText = myVoiceScript.CurrentText;
+		if (string.IsNullOrEmpty(sendText)) {
+			sendText = "wonderful good amazing happy time";
 		}
+		print("sending "+sendText+" to sentiment prediction object...");
+		predictionObject.PredictSentimentText(myVoiceScript.CurrentText);
+		print("sent to sentiment!");
+		StartCoroutine(WaitResponseFromThread());
 	}
 
 	// Sentiment Analysis Thread
@@ -58,7 +43,6 @@ public class SendTextToAnalyse : MonoBehaviour {
 	{		
 		SentimentAnalysisResponse = analysisResult;
 		responseFromThread = true;
-		//trick to call method to the main Thread
 	}
 
 	private IEnumerator WaitResponseFromThread()
@@ -67,31 +51,25 @@ public class SendTextToAnalyse : MonoBehaviour {
 		{
 			yield return null;
 		}
+		print("a response from sentiment!");
 		// Main Thread Action
 		PrintAnalysis();
+		yield return new WaitForSeconds(SENTIMENT_ANALYSIS_FREQUENCY);
+
 		// Reset
 		responseFromThread = false;
 		threadStarted = false;
+		UpdateLoop();
 	}
 
 	private void PrintAnalysis()
 	{
-		PositivePercent.text = SentimentAnalysisResponse.x + " % : Positive"; 
-		NegativePercent.text = SentimentAnalysisResponse.y + " % : Negative";
-		NeutralPercent.text = SentimentAnalysisResponse.z + " % : Neutral";
+		string sentAnalysisTxt = "";
+		sentAnalysisTxt += SentimentAnalysisResponse.x + " % : Positive"; 
+		sentAnalysisTxt += SentimentAnalysisResponse.y + " % : Negative";
+		sentAnalysisTxt += SentimentAnalysisResponse.z + " % : Neutral";
 		
-		if ( SentimentAnalysisResponse.x >  SentimentAnalysisResponse.y &&  SentimentAnalysisResponse.x >  SentimentAnalysisResponse.z)
-		{
-			ChangeSentimentalColor.color = PositiveResponse;
-		}
-		else if (SentimentAnalysisResponse.y >  SentimentAnalysisResponse.x &&  SentimentAnalysisResponse.y >  SentimentAnalysisResponse.z)
-		{
-			ChangeSentimentalColor.color = NegativeResponse;
-		}
-		else if (SentimentAnalysisResponse.z >  SentimentAnalysisResponse.x &&  SentimentAnalysisResponse.z >  SentimentAnalysisResponse.y)
-		{
-			ChangeSentimentalColor.color = NeutralResponse;
-		}
+		print(sentAnalysisTxt);
 	}
 
 	// Sentiment Analysis Thread

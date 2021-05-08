@@ -261,7 +261,7 @@ public class SceneScript : MonoBehaviour
             print("261 - error processing sound type");
         }
 
-        print("ooooooooooooooooooooooooooooooooooooooooooooo - "+curAnim+" - "+soundType);
+        print(" - playing sound for current animation "+curAnim+" with sound type "+soundType);
         GetComponent<AudioSource>().PlayDelayed(soundDelay[curAnim]);
     }
 

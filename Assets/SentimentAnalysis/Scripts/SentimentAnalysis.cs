@@ -123,7 +123,7 @@ namespace UnitySentiment
 
         private void InitializeReadingData()
         {
-            Debug.Log("Sentiment Database Initialization Started...");
+            //Debug.Log("Sentiment Database Initialization Started...");
 
             Monitor.TryEnter(analysisSyncObj);
             {
@@ -169,7 +169,7 @@ namespace UnitySentiment
         {
             if (Monitor.TryEnter(analysisSyncObj))
             {
-                Debug.Log("Sentiment Process Started...");
+                //Debug.Log("Sentiment Process Started...");
 
                 lock (analysisSyncObj)
                 {
@@ -303,11 +303,12 @@ namespace UnitySentiment
                     }
                     else
                     {
-                        ThrowError(5, "Please insert some Text");
+                        print("Sentiment analysis needs more text");
+                        OnAnlysisFinished(new Vector3(0, 0, 0));
                     }
                     // release the thread
                     Monitor.Exit(analysisSyncObj);
-                    Debug.Log("Sentiment Process Finished!");
+                    //Debug.Log("Sentiment Process Finished!");
                 }
             }
             else
