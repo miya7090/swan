@@ -91,6 +91,7 @@ public class VoiceScript : MonoBehaviour
         if (isUserSpeaking == true)
         {
             isUserSpeaking = false;
+            CurrentText = ""; // clear text since done
             //OnPhraseRecognized.Invoke(text);
         }
     }

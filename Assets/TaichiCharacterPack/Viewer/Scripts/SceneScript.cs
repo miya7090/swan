@@ -9,6 +9,7 @@ using UnityEngine;
 public class SceneScript : MonoBehaviour
 {
     // Public information
+    public VoiceScript VoiceScriptLink; // only need the variable indicating whether avatar currently speaking
     public GameObject animTest;
     public GUISkin guiSkin;
     public AudioSource avatarAudioSource;
@@ -106,6 +107,8 @@ public class SceneScript : MonoBehaviour
     
     void Start()
     {
+        avatarAudioSource = GetComponent<AudioSource>();
+
         txt = Resources.Load<TextAsset>(viewerSettingPath + "/" + FBXListFile);
         modelList = txt.text.Split(new string[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -232,6 +235,13 @@ public class SceneScript : MonoBehaviour
         }
 
         // play a sound, maybe
+        if (VoiceScriptLink.isUserSpeaking) {
+            avatarAudioSource.volume = 0.5f;
+            print("avatar will be quieter because the user is speaking~");
+        } else {
+            avatarAudioSource.volume = 1.0f;
+        }
+
         playSound(categoryName);
     }
 
@@ -248,21 +258,21 @@ public class SceneScript : MonoBehaviour
     {
         // "neutral", "distracted", "greeting", "nod", "shake"
         if (soundType == "greeting") {
-            GetComponent<AudioSource>().clip = voiceCodes["greeting"][UnityEngine.Random.Range(0, voiceCodes["greeting"].Length)];
+            avatarAudioSource.clip = voiceCodes["greeting"][UnityEngine.Random.Range(0, voiceCodes["greeting"].Length)];
         } else if (soundType == "neutral") {
-            GetComponent<AudioSource>().clip = voiceCodes["thinking-hesitant"][UnityEngine.Random.Range(0, voiceCodes["thinking-hesitant"].Length)];
+            avatarAudioSource.clip = voiceCodes["thinking-hesitant"][UnityEngine.Random.Range(0, voiceCodes["thinking-hesitant"].Length)];
         } else if (soundType == "distracted") {
-            GetComponent<AudioSource>().clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
+            avatarAudioSource.clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
         } else if (soundType == "nod") {
-            GetComponent<AudioSource>().clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
+            avatarAudioSource.clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
         } else if (soundType == "shake") {
-            GetComponent<AudioSource>().clip = voiceCodes["disappoint-ahh"][UnityEngine.Random.Range(0, voiceCodes["disappoint-ahh"].Length)];
+            avatarAudioSource.clip = voiceCodes["disappoint-ahh"][UnityEngine.Random.Range(0, voiceCodes["disappoint-ahh"].Length)];
         } else {
             print("261 - error processing sound type");
         }
 
         print(" - playing sound for current animation "+curAnim+" with sound type "+soundType);
-        GetComponent<AudioSource>().PlayDelayed(soundDelay[curAnim]);
+        avatarAudioSource.PlayDelayed(soundDelay[curAnim]);
     }
 
     // Initialize the avatar model

@@ -294,8 +294,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4741ffa7dbc32941a054e32bb9e7254, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  VoiceScriptLink: {fileID: 954873744}
   animTest: {fileID: 100240, guid: aa68ca2dd3fb0914390186cd6830caed, type: 3}
-  guiSkin: {fileID: 11400000, guid: 4e358f4e18f1ae64cb6eeb6627dbb7cb, type: 2}
+  guiSkin: {fileID: 0}
   avatarAudioSource: {fileID: 954873745}
 --- !u!114 &954873743
 MonoBehaviour:
