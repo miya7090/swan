@@ -1,13 +1,11 @@
-Quick demo: import all files into Unity (tested on 2020.3.0f1) and run `Assets/TaichiCharacterPack/Viewed/taichi_viewer.unity`.
+Quick demo: import all files into Unity (tested on 2020.3.0f1) and run `Assets/TaichiCharacterPack/Viewer/taichi_viewer.unity`.
 
 To include emotion recognition analysis, first activate this virtual environment: `.\new_venv\Scripts\activate`, then run `OpenCVSocket/ServerForRecognition.py` in a separate terminal concurrently as the Unity project is running.
 
-# Table of Contents
+## Table of Contents and more details
 
-## Unity Project
+### Unity Project
 You'll need to import all of the below folders into Unity to run the project.
-
- - *Library/*, *Logs/*, *Packages/*, *ProjectSettings/*, *UserSettings/*: these are less human-readable, but contain important information for Unity to be able to correctly run the project.
 
  - *Assets/TaichiCharacterPack/*
  
@@ -32,7 +30,9 @@ You'll need to import all of the below folders into Unity to run the project.
  
    - *Viewer/Resources/simlish_audio/*: this folder contains .wav files of recorded Simlish from the Sims 4, sorted into 5 distinct response categories.
 
-## Emotion Recognition Server
+ - *Library/*, *Logs/*, *Packages/*, *ProjectSettings/*, *UserSettings/*: these are less human-readable, but contain important information for Unity to be able to correctly run the project.
+ 
+### Emotion Recognition Server
 
  - *OpenCVSocket/*
  
@@ -52,12 +52,8 @@ Notes:
 
 2. The main Unity project will still work without server input; emotion feedback simply won't be included in the avatar's mood computations.
 
-3. Note to self: correct environment is `conda activate swan`
-
-4. The conda environment contains dependencies such as portaudio/pyaudio that may be difficult to install with a different dependency management system such as venv
-
-## Instructions for testing with remote participants
+### Instructions for testing with remote participants
 
 You can use [OBS Virtual Camera](https://obsproject.com/download) to capture a section of your screen (e.g. a Zoom feed) as a virtual camera to use with the emotion recognition server. If you see a black screen with glitching along the top in the emotion recognition visualizer, try using [this](github.com/Fenrirthviti/obs-virtual-cam) plugin (version 2.0.5).
 
-The server should normally pass its predictions to the Unity client; you can then screenshare the game scene through Zoom or another software, thus simulating direct use.
+The server should pass its predictions to the Unity client normally; you can then screenshare the game scene through Zoom or another software, thus simulating direct use.
