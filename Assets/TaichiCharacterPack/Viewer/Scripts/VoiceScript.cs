@@ -13,7 +13,7 @@ public class VoiceScript : MonoBehaviour
     protected DictationRecognizer dictationRecognizer;
 
     // #todo replace with sentiment analysis
-    private List<string> positiveWords = new List<string>(){"thanks", "thank", "good", "great", "easy", "nice", "happy", "interesting", "cool", "fun"};
+    private List<string> positiveWords = new List<string>(){"good", "great", "easy", "nice", "happy", "interesting", "cool", "fun"};
     private List<string> negativeWords = new List<string>(){"sad", "stress", "stressing", "stresses", "stressful", "frustrating", "stuck", "broken", "angry", "hard", "difficult", "confusing"};
 
     public string CurrentText;
@@ -30,18 +30,29 @@ public class VoiceScript : MonoBehaviour
         CurrentText = text;
         if (isUserSpeaking == false) { isUserSpeaking = true; }
 
-        string[] wordsSpoken = CurrentText.Split(' ');
-        for (int i = 0; i < wordsSpoken.Length; i++)
+        List<string> wordsSpoken = new List<string>(CurrentText.Split(' '));
+
+        // first check for mute keywords
+        if (wordsSpoken.Contains("swan") || wordsSpoken.Contains("hi") || wordsSpoken.Contains("hey")) {
+            SceneScriptLink.UnmuteSwan();
+            CurrentText = "";
+        }
+        else if (wordsSpoken.Contains("thanks") || wordsSpoken.Contains("thank")) {
+            SceneScriptLink.MuteSwan();
+            CurrentText = "";
+        }
+
+        foreach (string wordSpoke in wordsSpoken)
         {
-            if (positiveWords.Contains(wordsSpoken[i]))
+            if (positiveWords.Contains(wordSpoke))
             {
-                print("positive word detected! " + wordsSpoken[i]);
+                print("positive word detected! " + wordSpoke);
                 SceneScriptLink.ScheduleNewReaction("nod", "Voice recognition - positive");
                 CurrentText = "";
             }
-            else if (negativeWords.Contains(wordsSpoken[i]))
+            else if (negativeWords.Contains(wordSpoke))
             {
-                print("negative word detected! " + wordsSpoken[i]);
+                print("negative word detected! " + wordSpoke);
                 SceneScriptLink.ScheduleNewReaction("shake", "Voice recognition - negative");
                 CurrentText = "";
             }

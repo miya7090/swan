@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Text.RegularExpressions;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class SceneScript : MonoBehaviour
@@ -13,6 +14,9 @@ public class SceneScript : MonoBehaviour
     public GameObject animTest;
     public GUISkin guiSkin;
     public AudioSource avatarAudioSource;
+    public Text muteStatus;
+
+    public bool SwanIsMuted; // whether or not avatar is idle
     
     // Path names (no need to change)
     private const string FBXListFile = "fbx_list";
@@ -107,6 +111,8 @@ public class SceneScript : MonoBehaviour
     
     void Start()
     {
+        SwanIsMuted = false;
+
         avatarAudioSource = GetComponent<AudioSource>();
 
         txt = Resources.Load<TextAsset>(viewerSettingPath + "/" + FBXListFile);
@@ -139,28 +145,41 @@ public class SceneScript : MonoBehaviour
         curAnim = 0; // will later be updated to "greeting" through cooldown
         lastAnim = 0;
         curModel = 2;
-        scheduledMood_category = null;
-        scheduledReaction_category = "greeting";
-        moodCooldownTimer = 0;
-        reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated
-        reactionInitiationTimer = 0;
+        forceGreeting();
         Invoke("UpdateLoop", idleAnimationLength);
     }
 
     // MOST IMPORTANT FUNCTIONS ----------------------------------------------------------------------
 
+    public void MuteSwan(){
+        SwanIsMuted = true;
+        muteStatus.text = "swan is idle!\n(\"hey swan\" to activate)";
+        forceGreeting();
+        ScheduleNewMood("distracted", "swan muting procedure");
+    }
+
+    public void UnmuteSwan(){
+        SwanIsMuted = false;
+        muteStatus.text = "swan is active!\n(say \"thanks\" to mute)";
+        forceGreeting();
+    }
+
     // Refer to "animation picking diagram.jpg" for more details
     // CallerID is a string specifying where this function was called from for readability
     public void ScheduleNewMood(string animationType, string callerID)
     {
-        scheduledMood_category = animationType;
-        print(callerID + " scheduled new mood of category " + scheduledMood_category);
+        if (SwanIsMuted == false) {
+            scheduledMood_category = animationType;
+            print(callerID + " scheduled new mood of category " + scheduledMood_category);
+        }
     }
 
     public void ScheduleNewReaction(string animationType, string callerID)
     {
-        scheduledReaction_category = animationType;
-        print(callerID + " scheduled new reaction of category " + scheduledReaction_category);
+        if (SwanIsMuted == false) {
+            scheduledReaction_category = animationType;
+            print(callerID + " scheduled new reaction of category " + scheduledReaction_category);
+        }
     }
 
     // UpdateLoop switches out the avatar's current idle animation for the scheduled animation
@@ -254,25 +273,36 @@ public class SceneScript : MonoBehaviour
         if (Input.GetKeyDown("w")) IncrementMotion(1);
     }
 
+    private void forceGreeting(){
+        print("forcing greeting");
+        scheduledMood_category = null;
+        scheduledReaction_category = "greeting";
+        moodCooldownTimer = 0;
+        reactionCooldownTimer = reactionCooldown; // force greeting reaction to be animated
+        reactionInitiationTimer = 0;
+    }
+
     void playSound(string soundType)
     {
-        // "neutral", "distracted", "greeting", "nod", "shake"
-        if (soundType == "greeting") {
-            avatarAudioSource.clip = voiceCodes["greeting"][UnityEngine.Random.Range(0, voiceCodes["greeting"].Length)];
-        } else if (soundType == "neutral") {
-            avatarAudioSource.clip = voiceCodes["thinking-hesitant"][UnityEngine.Random.Range(0, voiceCodes["thinking-hesitant"].Length)];
-        } else if (soundType == "distracted") {
-            avatarAudioSource.clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
-        } else if (soundType == "nod") {
-            avatarAudioSource.clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
-        } else if (soundType == "shake") {
-            avatarAudioSource.clip = voiceCodes["disappoint-ahh"][UnityEngine.Random.Range(0, voiceCodes["disappoint-ahh"].Length)];
-        } else {
-            print("261 - error processing sound type");
-        }
+        if (SwanIsMuted == false) {
+            // "neutral", "distracted", "greeting", "nod", "shake"
+            if (soundType == "greeting") {
+                avatarAudioSource.clip = voiceCodes["greeting"][UnityEngine.Random.Range(0, voiceCodes["greeting"].Length)];
+            } else if (soundType == "neutral") {
+                avatarAudioSource.clip = voiceCodes["thinking-hesitant"][UnityEngine.Random.Range(0, voiceCodes["thinking-hesitant"].Length)];
+            } else if (soundType == "distracted") {
+                avatarAudioSource.clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
+            } else if (soundType == "nod") {
+                avatarAudioSource.clip = voiceCodes["confident-ahh"][UnityEngine.Random.Range(0, voiceCodes["confident-ahh"].Length)];
+            } else if (soundType == "shake") {
+                avatarAudioSource.clip = voiceCodes["disappoint-ahh"][UnityEngine.Random.Range(0, voiceCodes["disappoint-ahh"].Length)];
+            } else {
+                print("261 - error processing sound type");
+            }
 
-        print(" - playing sound for current animation "+curAnim+" with sound type "+soundType);
-        avatarAudioSource.PlayDelayed(soundDelay[curAnim]);
+            print(" - playing sound for current animation "+curAnim+" with sound type "+soundType);
+            avatarAudioSource.PlayDelayed(soundDelay[curAnim]);
+        }
     }
 
     // Initialize the avatar model
