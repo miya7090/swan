@@ -223,7 +223,7 @@ public class SceneScript : MonoBehaviour
             int[] possibleActions = codeDictionary[categoryName];
             int animIndex = UnityEngine.Random.Range(0, possibleActions.Length);
             curAnim = codeDictionary[categoryName][animIndex];
-            print("Performing motion "+animationList[curAnim]+" from category "+categoryName);
+            print("Performing motion "+animationList[curAnim]+" from category "+categoryName + ", [code " + curAnim + "]");
             if (curAnim != lastAnim) {
                 SetAnimation(animationList[curAnim], animSpeed, curAnim);
             } else {
@@ -329,7 +329,7 @@ public class SceneScript : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(_name))
         {
-            print("Setting animation to: " + _name + " ("+originalAnimNumber+")");
+            //print("Setting animation to: " + _name + " ("+originalAnimNumber+")");
             curAnimName = "" + _name;
             obj.GetComponent<Animation>().Play(curAnimName);
 
@@ -365,7 +365,7 @@ public class SceneScript : MonoBehaviour
             string matname = xNodeTex.Attributes["Material"].InnerText;
             string property = xNodeTex.Attributes["Property"].InnerText;
             string file = xNodeTex.Attributes["File"].InnerText;
-            print("Change Texture To " + matname + " : " + property + " : " + file);
+            //print("Change Texture To " + matname + " : " + property + " : " + file);
             foreach (Material mat in SM.GetComponent<Renderer>().sharedMaterials)
             {
                 if (mat)
