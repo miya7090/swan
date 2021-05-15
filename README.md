@@ -32,6 +32,10 @@ You'll need to import all of the below folders into Unity to run the project.
 
  - *Library/*, *Logs/*, *Packages/*, *ProjectSettings/*, *UserSettings/*: these are less human-readable, but contain important information for Unity to be able to correctly run the project.
  
+Notes:
+
+1. Unity's phrase recognition system is currently only functional on **Windows 10** as specified by its [documentation](https://docs.unity3d.com/ScriptReference/Windows.Speech.PhraseRecognitionSystem.html). SWAN should be able to work normally without voice recognition on other operating systems, but there's a chance that VoiceScript.cs may need to be removed to avoid loading errors.
+ 
 ### Emotion Recognition Server
 
  - *OpenCVSocket/*
