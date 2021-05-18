@@ -1,6 +1,10 @@
+**SWAN: A Social Avatar (6.835 final project)**
+
 Quick demo: import all files into Unity (tested on 2020.3.0f1) and run `Assets/TaichiCharacterPack/Viewer/taichi_viewer.unity`.
 
 To include emotion recognition analysis, first activate this virtual environment: `.\new_venv\Scripts\activate`, then run `OpenCVSocket/ServerForRecognition.py` in a separate terminal concurrently as the Unity project is running.
+
+---
 
 ## Table of Contents and more details
 
