@@ -62,6 +62,6 @@ Notes:
 
 ### Instructions for testing with remote participants
 
-You can use [OBS Virtual Camera](https://obsproject.com/download) to capture a section of your screen (e.g. a Zoom feed) as a virtual camera to use with the emotion recognition server. If you see a black screen with glitching along the top in the emotion recognition visualizer, try using [this](github.com/Fenrirthviti/obs-virtual-cam) plugin (version 2.0.5).
+You can use [OBS Virtual Camera](https://obsproject.com/download) to capture a section of your screen (e.g. a Zoom feed) as a virtual camera to use with the emotion recognition server. If you see a black screen with glitching along the top in the emotion recognition visualizer, try using [this](https://github.com/Fenrirthviti/obs-virtual-cam) plugin (version 2.0.5).
 
 The server should pass its predictions to the Unity client normally; you can then screenshare the game scene through Zoom or another software, thus simulating direct use.
